@@ -8,23 +8,31 @@ const InputLeftLabel = ({
     onChange, 
     helpText, 
     error, 
-    order 
+    order,
+    catIndex,
+    fieldIndex,
+    hasPrefixLabel, 
+    onClick
 }) => {
+
+    
     return (                         
     <React.Fragment>
-        {/* <label htmlFor={name}>{ label }</label> */}
-        <span className="input-group-text capitalize" id="inputGroup-sizing-sm">
-            {order ? order + '. ' + label : label}
+    {hasPrefixLabel === 'showPrefix' ? 
+        <span className="input-group-text capitalize" id={`inputGroup-sizing-sm-${catIndex}`}>
+            {name === 'ingredient' ? fieldIndex + 1 + '.' : label}
             </span>
+    : ''}
+        {hasPrefixLabel === '' && catIndex === '' ? <label htmlFor={name}>{ label }</label> : ''}
+        
         <input 
             value={value} 
             onChange={onChange}
             type={type} 
             name={name}
-            autoFocus 
-            id={name} 
+            id={`catIndex_${catIndex}-ingIndex_${fieldIndex}-catName_${name}`}
             className="form-control" 
-            aria-describedby="emailHelp"
+            aria-describedby={type}
         />
         {helpText && <div id={`${name}Help`} className="form-text">{ helpText }</div>}
         {error && <div className="alert alert-danger">{ error }</div> }
