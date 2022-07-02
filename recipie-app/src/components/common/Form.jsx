@@ -5,11 +5,27 @@ import Select from './Select';
 import Joi from 'joi-browser';
 
 class Form extends Component {
-    state = { 
-        data: {},
-        errors: {}
-     } 
+    constructor (props) {
+        super(props)
+        this.state = { 
+            data: {ingForm2:[{ingredients:[]}]},
+            errors: {}
+         } 
+    }
 
+
+
+    componentDidMount() {
+        console.log('cdm - FORM DID MOUNT')
+    }
+
+    handleFormState (data) {
+        this.setState({data})
+    }
+
+    // handleFormState (name,data) {
+    //     this.setState({[name]:data})
+    // }
 
     validate = () => {
         const options = { abortEarly: false}
@@ -18,7 +34,8 @@ class Form extends Component {
 
         const errors = {};
         for (let item of error.details) errors[item.path[0]] = item.message;
-        return errors;
+        // return errors;
+        return null // overrides all form validation
     };
 
     validateProperty = ({ name, value }) => {
@@ -27,6 +44,24 @@ class Form extends Component {
         const { error } = Joi.validate(obj, schema)
         return error ? error.details[0].message : null;
     };
+    // validateProperty = ({ name, value }, catIndex,fieldIndex) => {
+    //     console.log('catIndex', catIndex, 'fieldIndex', fieldIndex)
+    //     if(typeof fieldIndex !== 'string') {
+    //         // console.log(typeof fieldIndex);
+    //         // console.log('validateProperty field ',name, fieldIndex )
+    //         return null
+    //     } else if(typeof catIndex !== 'string'){
+    //         // console.log(typeof catIndex);
+    //         // console.log('validateProperty cat', name, catIndex, fieldIndex )
+    //         return null
+    //     } else {
+    //        console.log('top fields') 
+    //        const obj = { [name]: value };
+    //        const schema = { [name]: this.schema[name]}
+    //        const { error } = Joi.validate(obj, schema)
+    //        return error ? error.details[0].message : null;
+    //     }
+    // };
 
     handleSubmit = e => {
         e.preventDefault();
@@ -38,127 +73,6 @@ class Form extends Component {
         this.doSubmit()
     };
 
-
-
-    handleChange = (event, catIndex,fieldIndex) => {
-        catIndex = parseInt(catIndex)
-        fieldIndex = parseInt(fieldIndex)
-        console.log('catIndex: ', typeof catIndex, 'fieldIndex: ', typeof fieldIndex)
-        console.log('catIndex: ', catIndex, 'fieldIndex: ', fieldIndex)
-        let input = event.target
-        // console.log(input)
-        const errors = {...this.state.errors}
-        // const errorMessage = this.validateProperty(input);
-        // if (errorMessage) errors[input.name] = errorMessage;
-        // else delete errors[input.name];
-
-        const data = {...this.state.data} /// this does not seem to be WORKING!!!!!
-        console.log("alpental", this.state)
-
-            if(input.name !== 'ingForm2'){ // user cannot use this fieldname
-                const formHasField = input.name in data
-                if(formHasField) {
-                    console.log('basic form field', 'input.name: ', input.name, input)
-                    data[input.name] = input.value; // this needs to change for nested ingredients
-                } else if (isNaN(fieldIndex)) {
-                    console.log('category field', 'input.name: ', input.name, input)
-                    console.log({category: data})
-                    data.ingForm2[catIndex].cat = input.value
-                    console.log(data.ingForm2)
-                } else if (fieldIndex > -1 && typeof fieldIndex === 'number'){
-                    console.log('ingredient field', 'input.name: ', input.name, input, "fieldIndex: ", fieldIndex)
-                    if(input.name === 'ingredient') {
-                        data.ingForm2[catIndex].ingredients[fieldIndex].fieldValue = input.value
-                    } else if (input.name === 'ingredient-amount') {
-                        data.ingForm2[catIndex].ingredients[fieldIndex].unitTypeAmount = input.value
-                    } else if (input.name === 'ingredient-unit') {
-                        data.ingForm2[catIndex].ingredients[fieldIndex].unitType = input.value
-                    }
-                }
-            }
-
-
-        
-        // data[input.name] = input.value; // this needs to change for nested ingredients
-        console.log({this: this})
-        this.setState({ data, errors })
-        
-    }
-
-    // renderInput(name, label, type = 'text', helpText ='') {
-    //     const { data, errors } = this.state
-    //     return <Input 
-    //     name={name} 
-    //     label={label}
-    //     type={type}
-    //     // value={data[name]} 
-    //     onChange={this.handleChange} 
-    //     helpText={helpText}
-    //     // error={errors[name]} 
-    // />
-    // }
-
-    getValue(data,name,catIndex,fieldIndex) {
-        // console.log({catIndex});
-        
-        if(catIndex < 1 || isNaN(catIndex)) {
-            return data[name]
-        } else if(catIndex && catIndex > -1){
-            console.log('catIndexgv', catIndex)
-            console.log(data.ingForm2)
-            if(!data.ingForm2){
-                data.ingForm2 = []
-            }
-            return data.ingForm2[catIndex]
-        }
-        // return data[name]
-    }
-
-
-
-    renderInputLeftLabel(
-        name, 
-        label, 
-        type = 'text', 
-        value = '',
-        helpText ='', 
-        error='', 
-        order,
-        catIndex,
-        fieldIndex,
-        hasPrefixLabel
-        ) {
-        const { data, errors } = this.state
-        return <InputLeftLabel 
-        name={name} 
-        order={order}
-        label={label}
-        type={type}
-        // value={data[name]} 
-        value={this.getValue(data,name,catIndex,fieldIndex,type,value)} 
-        onChange={event => this.handleChange(event, catIndex,fieldIndex)} 
-        helpText={helpText}
-        // error={errors[name]}
-        catIndex={catIndex}
-        fieldIndex={fieldIndex} 
-        hasPrefixLabel={hasPrefixLabel}
-    />
-    }
-
-
-
-    renderSelect(name, label, helpText ='', options = {}) {
-        const { data, errors } = this.state
-        return <Select
-        name={name} 
-        label={label}
-        value={data[name]}
-        onChange={this.handleChange} 
-        options={options}
-        helpText={helpText}
-        error={errors[name]} 
-        />
-    }
 
     renderButton(label,color, onClick) {
         return  <button 
@@ -176,7 +90,98 @@ class Form extends Component {
             {label}
             {onClick}
     </button>
+    } 
+
+// below here NOT USED FOR editRecipie form
+    handleChange = (event, catIndex,fieldIndex) => {
+        let input = event.target
+        //console.log(input, catIndex, fieldIndex)
+        const errors = {...this.state.errors}
+        const errorMessage = this.validateProperty(input,catIndex,fieldIndex);
+        if (errorMessage) errors[input.name] = errorMessage;
+        else delete errors[input.name];
+        const data = {...this.state.data} /// this does not seem to be WORKING!!!!!
+        //console.log('handleChange', data)
+            data[input.name] = input.value; // this needs to change for nested ingredients
+        this.setState({ data, errors })
+        
     }
+
+    renderInput(name, label, type = 'text', helpText ='') {
+        const { data, errors } = this.state
+        return <Input 
+        name={name} 
+        label={label}
+        type={type}
+        value={data[name]} 
+        onChange={this.handleChange} 
+        helpText={helpText}
+        error={errors[name]} 
+    />
+    }
+
+    getValue(name,value,catIndex,fieldIndex){
+        const data = {...this.state.data}
+        if(catIndex) {
+            console.log('catIndex true')
+            console.log(data);
+            //return data['ingForm2'][catIndex].cat; // this needs to change for nested ingredients
+        } else {
+            // return null; // this needs to change for nested ingredients
+        }
+    }
+
+
+
+    renderInputLeftLabel(
+        name, 
+        label, 
+        type = 'text', 
+        value,
+        helpText ='', 
+        error='', 
+        order,
+        catIndex,
+        fieldIndex,
+        hasPrefixLabel
+        ) {
+        const { data, errors } = this.state
+
+
+            return <InputLeftLabel 
+            name={name} 
+            order={order}
+            label={label}
+            type={type}
+            value={data[name] || value} 
+            //value={this.getValue(name,value,catIndex,fieldIndex) || value}
+            //value={this.getValue(data,name,catIndex,fieldIndex,type,value)} 
+            onChange={event => this.handleChange(event, catIndex,fieldIndex)} 
+            helpText={helpText}
+            // error={errors[name]}
+            catIndex={catIndex}
+            fieldIndex={fieldIndex} 
+            hasPrefixLabel={hasPrefixLabel}
+        />
+
+    }
+
+
+
+    renderSelect(name, label, helpText ='', options = {},showLabel) {
+        const { data, errors } = this.state
+        return <Select
+        name={name} 
+        label={label}
+        value={data[name]}
+        onChange={this.handleChange} 
+        options={options}
+        helpText={helpText}
+        error={errors[name]} 
+        />
+    }
+
+
 
 }
  

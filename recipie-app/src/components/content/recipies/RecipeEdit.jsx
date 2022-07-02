@@ -7,88 +7,114 @@ import userService from '../../../services/userService';
 // import { data } from 'autoprefixer';
 import IngredientCat from './IngredientCat';
 import { getConfigs } from '../../../config';
+import Axios from 'axios';
+import { Link } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 
 
 class recipeEdit extends Form {
-    state = { 
-        data: {
-            recipeTitle: 'recipe title',
-            prepTime: '10',
-            totalTime: '30',
-            description: 'I am a description',
-            ingForm2:[
-                {
-                    cat: "chili", 
-                    catId: null, 
-                    sortOrder: 0, 
-                    ingredients:[
-                        {
-                            fieldValue: "ground beef", 
-                            ingId: null, 
-                            sortOrder: 0, 
-                            unitType: "pound", 
-                            unitTypeAmount: .5, 
-                            description: "cooked" 
-                        },
-                        {   
-                            fieldValue: "bell pepper", 
-                            ingId: null, 
-                            sortOrder: 1, 
-                            unitType: "", 
-                            unitTypeAmount: null, 
-                            description: "" 
-                        }
-                    ]
-                },
-                {
-                    cat: "garnish", 
-                    catId: null, 
-                    sortOrder: 1, 
-                    ingredients:[
-                        {
-                            fieldValue: "cilantro", 
-                            ingId: null, 
-                            sortOrder: 0, 
-                            unitType: "tsp", 
-                            unitTypeAmount: 2, 
-                            description: "" 
-                        },
-                        {
-                            fieldValue: "cheese", 
-                            ingId: null, 
-                            sortOrder: 1, 
-                            unitType: "ounce", 
-                            unitTypeAmount: 5, 
-                            description: "grated" 
-                        }, 
-                        {
-                            fieldValue: "cheese", 
-                            ingId: null, 
-                            sortOrder: 2, 
-                            unitType: "ounce", 
-                            unitTypeAmount: 5, 
-                            description: "grated" 
-                        }   
-                    ]
-                }
-            ],
-            steps:{}
-        },
-        errors: {}
+    state = {
+        data:{}
     }
+
+
+    componentDidMount() {
+        let recipeId = this.props.match.params.recipeId
+            Axios.get(`/api/recipestest/${recipeId}`)
+            .then(res => {
+                console.log(res.data.data)
+                // this.handleFormState(res.data.data)
+                this.setState({ 
+                    data: res.data.data, 
+                }); 
+
+                if(res.data.status === 404) {
+                    return <Redirect to={'/recipe-not-found'}/>
+                }
+    })
+
+    Axios.get(`/api/recipes/${recipeId}/edit`)
+    .then(res => {
+        console.log(res.data.data)
+        // this.handleFormState(res.data.data)
+         this.setState({ 
+            data: res.data.data, 
+        }); 
+
+        if(res.data.status === 404) {
+            return <Redirect to={'/recipe-not-found'}/>
+        }
+})
+        if(!this.state.units){
+            Axios.get('/api/lookup/units')
+            .then(res => {
+                const unitsArray = []
+                res.data.data.map(unit => {
+                    unitsArray.push({label: unit.name, value: unit.id})
+                })
+                this.setState({ units: unitsArray });
+            }) 
+        }
+    
+    // let recipeId = this.props.match.params.recipeId
+    // let one = `/api/recipestest/${recipeId}`
+    // let two = '/api/lookup/units'
+
+    // const requestOne = Axios.get(one)
+    // const requestTwo = Axios.get(two)
+    
+    // Axios.all([requestOne], [requestTwo]).then(Axios.spread((...responses) => {
+    //     const recipeRes = responses[0]
+    //     const unitsRes = responses[1]
+    //     console.log('recipeRes', recipeRes)
+    //     console.log('unitsRes', unitsRes)
+    //     this.setState({data: recipeRes.data.data})
+
+    //     const unitsArray = []
+    //     unitsRes.data.data.map(unit => {
+    //         unitsArray.push({label: unit.name, value: unit.id})
+    //     })
+    //     console.log('unitsArr',unitsArray)
+    //     this.setState({ units: unitsArray });
+        
+    // })).catch(errors => {
+    //     console.log(errors)
+    // })
+        
+    console.log('cdm - RecipeEdit DID MOUNT')
+}
+
+
+    
 
     ingredient = {fieldValue: "", ingId: null, sortOrder: 0, unitType: "", description: "" }
 
     schema = {
         recipeTitle: Joi.string()
             .required()
-            .label('Recipe Title'),
+            .label('Recipe Title')
+            .min(3)
+            .max(30)
+            .required(),
         prepTime: Joi.number()
             .label('Prep Time'),
         totalTime: Joi.number()
             .label('Prep Time'),
         description: Joi.string()
             .label('Description')
+            .required(),
+        catName: Joi.string()
+            .label('Category')
+            .required(),
+        ingredient: Joi.string()
+            .label('Ingredient')
+            .required(),
+        unitType: Joi.string()
+            .label('Unit')
+            .required(),
+        unitTypeAmount: Joi.number()
+            .label('Amount')
+            .required()
     }
 
     doSubmit = async () => {
@@ -151,12 +177,12 @@ class recipeEdit extends Form {
         newCat.ingredients = []
         newCat.ingredients.push(newIngredient)
         newState.data.ingForm2.push(newCat)
-        console.log(newState)
+        // console.log(newState)
         // this.setState({newState})
     }
 
     handleCatSortDown = (cat) => {
-        console.log(this.state.data.ingForm2)
+        // console.log(this.state.data.ingForm2)
         let newState = {...this.state}
         const newCats = newState.data.ingForm2
         const catPos = newCats.indexOf(cat)
@@ -179,8 +205,9 @@ class recipeEdit extends Form {
     render() { 
         // console.log(Object.keys(this.state.data.ingForm))
         const { ingForm,ingForm2 } = this.state.data
+        const { units } = this.state
         const { data } = this.state;
-        
+        //console.log('recipeEdit state: ', this.state)
 
         return (
                 <div className="container">
@@ -240,13 +267,15 @@ class recipeEdit extends Form {
                                 )}
 
                         <h2>Ingredients</h2>
-
+                        
                         {ingForm2 && ingForm2.map((cat, catIndex, catArr) =>(
                             <IngredientCat
+                                key={catIndex}
                                 cat={cat}
                                 catIndex={catIndex}
                                 catArr={catArr}
-                                data={data}
+                                recipeEditState={data}
+                                units={units}
                                 onIngDelete={this.handleIngredientDelete}
                                 onIngDown={this.handleIngredientSortDown}
                                 onIngUp={this.handleIngredientSortUp}
@@ -254,18 +283,17 @@ class recipeEdit extends Form {
                                 onCatSortDown={this.handleCatSortDown}
                                 onCatSortUp={this.handleCatSortUp}
                             />
+
                         ))}
-                        <div className="offset-md-1col-sm-3 g-2">
-                        {
-                        ingForm2
-                        .length < getConfigs().recipes.maxCats ?  
+                        <div className="offset-md-1 col-sm-3 g-2">
+                        {ingForm2 && ingForm2.length < getConfigs().recipes.maxCats ?  
                             <button
                                 className="btn btn-info"
                                 onClick={this.handleCatAdd}
                             >
                                 Add Recipe Category
                             </button>
-                            :`A max of ${ingForm2.length} categories have been created`}
+                            :`A max of ${ingForm2 && ingForm2.length} categories have been created`}
                             {/* {this.renderButton('Add Recipe Cat','info')} */}
                         </div>
                         <div className="row">

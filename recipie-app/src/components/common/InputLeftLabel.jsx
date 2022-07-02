@@ -20,7 +20,7 @@ const InputLeftLabel = ({
     <React.Fragment>
     {hasPrefixLabel === 'showPrefix' ? 
         <span className="input-group-text capitalize" id={`inputGroup-sizing-sm-${catIndex}`}>
-            {name === 'ingredient' ? fieldIndex + 1 + '.' : label}
+            {label === 'ingredient' ? `${label} ${fieldIndex + 1}` : label}
             </span>
     : ''}
         {hasPrefixLabel === '' && catIndex === '' ? <label htmlFor={name}>{ label }</label> : ''}

@@ -81,7 +81,7 @@ class RegisterForm extends Form {
                             'Gender: Male, Female, Other',
                             genderArray
                         )} 
-                        {this.renderButton('Register')}
+                        {this.renderButton('Register','primary')}
                     </form>
                 </div>
             </div>

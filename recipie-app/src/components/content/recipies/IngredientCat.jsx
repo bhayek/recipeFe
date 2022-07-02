@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import Form from '../../common/Form';
 import Ingredient from './Ingredient';
+import recipeEdit from './RecipeEdit';
 import { getConfigs } from '../../../config';
+import InputLeftLabel from '../../common/InputLeftLabel';
 
 
 class IngredientCat extends Form {
@@ -18,13 +20,78 @@ class IngredientCat extends Form {
     }
 
 
+componentDidMount() {
+    console.log('cdm - IngredientCat DID MOUNT')
+    // console.log('props')
+    // console.log(this.props.recipeEditState.ingForm2)
+}
 
+getCatValue(name,value,catIndex,fieldIndex) {
+    let data = this.props.recipeEditState
+    if(catIndex +1){
+        //console.log(data.ingForm2)
+        return data.ingForm2[catIndex].cat
+    }
+}
+
+
+handleCatChange = (event, catIndex,fieldIndex) => {
+    let input = event.target
+    //console.log(input, catIndex, fieldIndex)
+    const errors = {...this.state.errors}
+    const errorMessage = this.validateProperty(input,catIndex,fieldIndex);
+    if (errorMessage) errors[input.name] = errorMessage;
+    else delete errors[input.name];
+    const data = {...this.props.recipeEditState} /// this does not seem to be WORKING!!!!!
+    // console.log('handleChange', data)
+    if(catIndex +1 && !fieldIndex) {
+        //console.log('catIndex fired')
+        data.ingForm2[catIndex].cat = input.value
+    } else {
+        //data[input.name] = input.value; // this needs to change for nested ingredients
+    }
+    this.setState({ data, errors })
+    
+}
+
+renderInputLeftLabel(
+    name, 
+    label, 
+    type = 'text', 
+    value,
+    helpText ='', 
+    error='', 
+    order,
+    catIndex,
+    fieldIndex,
+    hasPrefixLabel
+    ) {
+    const { data, errors } = this.state
+
+
+        return <InputLeftLabel 
+        name={name} 
+        order={order}
+        label={label}
+        type={type}
+        //value={data[name]} 
+        value={this.getCatValue(name,value,catIndex,fieldIndex)}
+        //value={this.getValue(data,name,catIndex,fieldIndex,type,value)} 
+        onChange={event => this.handleCatChange(event, catIndex,fieldIndex)} 
+        helpText={helpText}
+        // error={errors[name]}
+        catIndex={catIndex}
+        fieldIndex={fieldIndex} 
+        hasPrefixLabel={hasPrefixLabel}
+    />
+
+}
     
 
 
 
     render() { 
-        const { cat,catIndex,catArr,data } = this.props
+        const { cat,catIndex,catArr,recipeEditState,units } = this.props
      
         return (
             <div>
@@ -44,10 +111,10 @@ class IngredientCat extends Form {
                     <div className="row g-3">
                         <div className="col-sm-3">
                             {this.renderInputLeftLabel(
-                                cat, // name
+                                'catName', // name
                                 'Category', //label
                                 'text', // type
-                                '', // value
+                                cat.cat, // value
                                 '', // onChange
                                 '', // helpText
                                 '', // sortOrder
@@ -82,11 +149,13 @@ class IngredientCat extends Form {
                     {cat.ingredients.map((field, fieldIndex, arr) => (
                         <React.Fragment>
                             <Ingredient
+                                key={fieldIndex}
                                 field={field}
                                 fieldIndex={fieldIndex}
                                 arr={arr}
+                                units={units}
                                 catIndex={catIndex}
-                                data={data}
+                                recipeEditState={recipeEditState}
                                 cat={cat}
                                 onIngDelete={() => this.props.onIngDelete(field, this.props.cat)}
                                 onIngDown={() => this.props.onIngDown(field, this.props.cat)}
@@ -100,7 +169,7 @@ class IngredientCat extends Form {
                         cat.ingredients
                         .length < getConfigs().recipes.maxCatIngredients ?   
                             <button className="btn btn-info"
-                                onClick={() => this.addIngredient(data, catIndex)}
+                                onClick={() => this.addIngredient(recipeEditState, catIndex)}
                             >
                             Add Ingredient
                         </button>

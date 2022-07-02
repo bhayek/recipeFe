@@ -34,7 +34,7 @@ class LoginForm extends Form {
                     <form onSubmit={this.handleSubmit}>
                         {this.renderInput('email','Email Address','email',"We'll never share your email.")}
                         {this.renderInput('password','Password','password')} 
-                        {this.renderButton('Login')}
+                        {this.renderButton('Login','primary')}
                     </form>
                 </div>
             </div>
