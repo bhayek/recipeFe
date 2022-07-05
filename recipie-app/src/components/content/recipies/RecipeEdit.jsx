@@ -4,10 +4,11 @@ import Input from '../../common/Input';
 import InputLeftLabel from '../../common/InputLeftLabel';
 import Joi from 'joi-browser';
 import userService from '../../../services/userService';
+import recipeService from '../../../services/recipeService';
 // import { data } from 'autoprefixer';
 import IngredientCat from './IngredientCat';
 import { getConfigs } from '../../../config';
-import Axios from 'axios';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router-dom';
 
@@ -17,10 +18,11 @@ class recipeEdit extends Form {
         data:{}
     }
 
+    
 
     componentDidMount() {
         let recipeId = this.props.match.params.recipeId
-            Axios.get(`/api/recipestest/${recipeId}`)
+            axios.get(`/api/recipestest/${recipeId}`)
             .then(res => {
                 console.log(res.data.data)
                 // this.handleFormState(res.data.data)
@@ -33,7 +35,7 @@ class recipeEdit extends Form {
                 }
     })
 
-    Axios.get(`/api/recipes/${recipeId}/edit`)
+    axios.get(`/api/recipes/${recipeId}/edit`)
     .then(res => {
         console.log(res.data.data)
         // this.handleFormState(res.data.data)
@@ -46,7 +48,7 @@ class recipeEdit extends Form {
         }
 })
         if(!this.state.units){
-            Axios.get('/api/lookup/units')
+            axios.get('/api/lookup/units')
             .then(res => {
                 const unitsArray = []
                 res.data.data.map(unit => {
@@ -60,10 +62,10 @@ class recipeEdit extends Form {
     // let one = `/api/recipestest/${recipeId}`
     // let two = '/api/lookup/units'
 
-    // const requestOne = Axios.get(one)
-    // const requestTwo = Axios.get(two)
+    // const requestOne = axios.get(one)
+    // const requestTwo = axios.get(two)
     
-    // Axios.all([requestOne], [requestTwo]).then(Axios.spread((...responses) => {
+    // axios.all([requestOne], [requestTwo]).then(axios.spread((...responses) => {
     //     const recipeRes = responses[0]
     //     const unitsRes = responses[1]
     //     console.log('recipeRes', recipeRes)
@@ -118,8 +120,23 @@ class recipeEdit extends Form {
     }
 
     doSubmit = async () => {
+        const recipeId = this.props.match.params.recipeId
         const { data } = this.state;
-        const resp = await userService.login(data,'/')
+        const resp = await recipeService.saveRecipe(data,recipeId)
+    }
+
+
+    handleIngredientAdd = (catIndex) => {
+        let newData = this.state.data;
+        console.log(newData.ingForm2)
+        let ingredients = newData.ingForm2[catIndex].ingredients
+        let lastIngredient = ingredients[ingredients.length -1]
+        let newIngredient = {...lastIngredient}
+        Object.keys(newIngredient).forEach(key => newIngredient[key] = null)
+        newIngredient.sortOrder = lastIngredient.sortOrder + 1
+        newIngredient.fieldValue = `Ingredient ${ingredients.length+1}`
+        ingredients.push(newIngredient)
+        this.setState({data: newData})
     }
 
 
@@ -164,13 +181,15 @@ class recipeEdit extends Form {
         
     }
 
-    handleCatAdd = () => {
+    handleCatAdd = (e) => {
+        console.log(e)
+        
         console.log("cat added")
         let newState = {...this.state}
         let newCat = {...newState.data.ingForm2[0]}
         let newIngredient = {...newCat.ingredients[0]}
-        Object.keys(newIngredient).forEach(key => newIngredient[key] = '')
-        Object.keys(newCat).forEach(key => newCat[key] = '')
+        Object.keys(newIngredient).forEach(key => newIngredient[key] = null)
+        Object.keys(newCat).forEach(key => newCat[key] = null)
         newCat.sortOrder = newState.data.ingForm2.length
         newCat.cat = `New Ingredient List ${newCat.sortOrder +1}`
         newIngredient.sortOrder = 0
@@ -178,7 +197,7 @@ class recipeEdit extends Form {
         newCat.ingredients.push(newIngredient)
         newState.data.ingForm2.push(newCat)
         // console.log(newState)
-        // this.setState({newState})
+        this.setState({newState})
     }
 
     handleCatSortDown = (cat) => {
@@ -229,7 +248,7 @@ class recipeEdit extends Form {
                         {/* {this.renderInput('prepTime','Preparation Time','text')} */}
                         {this.renderInputLeftLabel(
                                 'prepTime', // name
-                                'Preparation Time', //label
+                                'Preparation Time (Minutes)', //label
                                 'text', // type
                                 '', // value
                                 '', // onChange
@@ -242,7 +261,7 @@ class recipeEdit extends Form {
                         {/* {this.renderInput('totalTime','Total Time (includes cook, rise, etc.)','text')}  */}
                         {this.renderInputLeftLabel(
                                 'totalTime', // name
-                                'Total Time', //label
+                                'Total Time (Minutes)', //label
                                 'text', // type
                                 '', // value
                                 '', // onChange
@@ -253,7 +272,7 @@ class recipeEdit extends Form {
                                 '' // prefixLabel
                                 )}
                         {/* {this.renderInput('description','Recipe description','text',"",'Required')}  */}
-                        {this.renderInputLeftLabel(
+                        {this.renderTextarea(
                                 'description', // name
                                 'Recipe Description', //label
                                 'text', // type
@@ -276,6 +295,7 @@ class recipeEdit extends Form {
                                 catArr={catArr}
                                 recipeEditState={data}
                                 units={units}
+                                onIngAdd={this.handleIngredientAdd}
                                 onIngDelete={this.handleIngredientDelete}
                                 onIngDown={this.handleIngredientSortDown}
                                 onIngUp={this.handleIngredientSortUp}
@@ -287,12 +307,12 @@ class recipeEdit extends Form {
                         ))}
                         <div className="offset-md-1 col-sm-3 g-2">
                         {ingForm2 && ingForm2.length < getConfigs().recipes.maxCats ?  
-                            <button
+                            <div
                                 className="btn btn-info"
                                 onClick={this.handleCatAdd}
                             >
                                 Add Recipe Category
-                            </button>
+                            </div>
                             :`A max of ${ingForm2 && ingForm2.length} categories have been created`}
                             {/* {this.renderButton('Add Recipe Cat','info')} */}
                         </div>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Input from './Input';
 import InputLeftLabel from './InputLeftLabel';
+import Textarea from './Textarea';
 import Select from './Select';
 import Joi from 'joi-browser';
 
@@ -73,6 +74,39 @@ class Form extends Component {
         this.doSubmit()
     };
 
+    
+    renderTextarea(
+        name, 
+        label, 
+        type = 'text', 
+        value,
+        helpText ='', 
+        error='', 
+        order,
+        catIndex,
+        fieldIndex,
+        hasPrefixLabel
+        ) {
+        const { data, errors } = this.state
+
+
+            return <Textarea 
+            name={name} 
+            order={order}
+            label={label}
+            type={type}
+            value={data[name] || value} 
+            //value={this.getValue(name,value,catIndex,fieldIndex) || value}
+            //value={this.getValue(data,name,catIndex,fieldIndex,type,value)} 
+            onChange={event => this.handleChange(event, catIndex,fieldIndex)} 
+            helpText={helpText}
+            // error={errors[name]}
+            catIndex={catIndex}
+            fieldIndex={fieldIndex} 
+            hasPrefixLabel={hasPrefixLabel}
+        />
+
+    }
 
     renderButton(label,color, onClick) {
         return  <button 

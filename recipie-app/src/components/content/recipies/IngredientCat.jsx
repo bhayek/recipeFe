@@ -12,7 +12,7 @@ class IngredientCat extends Form {
         let ingredients = formObj[catIndex].ingredients
         let lastIngredient = ingredients[ingredients.length -1]
         let newIngredient = {...lastIngredient}
-        Object.keys(newIngredient).forEach(key => newIngredient[key] = '')
+        Object.keys(newIngredient).forEach(key => newIngredient[key] = null)
         newIngredient.sortOrder = lastIngredient.sortOrder + 1
         newIngredient.fieldValue = `Ingredient ${ingredients.length+1}`
         ingredients.push(newIngredient)
@@ -168,11 +168,11 @@ renderInputLeftLabel(
                         {
                         cat.ingredients
                         .length < getConfigs().recipes.maxCatIngredients ?   
-                            <button className="btn btn-info"
-                                onClick={() => this.addIngredient(recipeEditState, catIndex)}
+                            <div className="btn btn-info"
+                                onClick={() => this.props.onIngAdd(catIndex)}
                             >
                             Add Ingredient
-                        </button>
+                        </div>
                         : <p>Max of {getConfigs().recipes.maxCatIngredients} ingredients added</p>}
                         </div>
                 </div>
