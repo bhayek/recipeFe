@@ -15,6 +15,7 @@ import User from './components/content/admin/User';
 import RecipeNotFound from './components/content/recipies/RecipeNotFound';
 import 'react-toastify/dist/ReactToastify.css'
 import './App.css';
+import Footer from './components/nav/Footer'
 
 // import { renderIntoDocument } from 'react-dom/test-utils';
 
@@ -56,6 +57,7 @@ class App extends Component {
                 <Route path="/" component={Home} />
               </Switch>
             {/* </Routes>*/}
+            <Footer/>
         </div>
         
     </div>

@@ -21,31 +21,42 @@ class recipeEdit extends Form {
     
 
     componentDidMount() {
+        
+        
         let recipeId = this.props.match.params.recipeId
-            axios.get(`/api/recipestest/${recipeId}`)
-            .then(res => {
-                console.log(res.data.data)
-                // this.handleFormState(res.data.data)
-                this.setState({ 
-                    data: res.data.data, 
-                }); 
+    //         axios.get(`/api/recipestest/${recipeId}`)
+    //         .then(res => {
+    //             console.log(res.data.data)
+    //             // this.handleFormState(res.data.data)
+    //             this.setState({ 
+    //                 data: res.data.data, 
+    //             }); 
 
-                if(res.data.status === 404) {
-                    return <Redirect to={'/recipe-not-found'}/>
-                }
-    })
+    //             if(res.data.status === 404) {
+    //                 return <Redirect to={'/recipe-not-found'}/>
+    //             }
+    // })
 
     axios.get(`/api/recipes/${recipeId}/edit`)
     .then(res => {
-        console.log(res.data.data)
-        // this.handleFormState(res.data.data)
-         this.setState({ 
-            data: res.data.data, 
-        }); 
 
         if(res.data.status === 404) {
             return <Redirect to={'/recipe-not-found'}/>
         }
+         this.setState({ 
+            data: res.data.data, 
+        }); 
+        return res
+}).then((res) => {
+    // console.log('res',res)
+    // if(res.data.data){
+    //     let newCatObj = {...getConfigs().recipes.emptyCatObj}
+    //     newCatObj.sortOrder = 0
+    //     newCatObj.ingredients.sortOrder = 0
+    //     newCatObj.cat = `Ingredient list name goes here`
+    //     res.data.data.ingform2.push(newCatObj)
+    //     this.setState({data:res.data.data})
+    // }
 })
         if(!this.state.units){
             axios.get('/api/lookup/units')
@@ -186,13 +197,14 @@ class recipeEdit extends Form {
         
         console.log("cat added")
         let newState = {...this.state}
-        let newCat = {...newState.data.ingForm2[0]}
+        let newCat = {...getConfigs().recipes.emptyCatObj}
         let newIngredient = {...newCat.ingredients[0]}
-        Object.keys(newIngredient).forEach(key => newIngredient[key] = null)
-        Object.keys(newCat).forEach(key => newCat[key] = null)
-        newCat.sortOrder = newState.data.ingForm2.length
-        newCat.cat = `New Ingredient List ${newCat.sortOrder +1}`
+        // Object.keys(newIngredient).forEach(key => newIngredient[key] = null)
+        // Object.keys(newCat).forEach(key => newCat[key] = null)
+        newCat.sort = newState.data.ingForm2.length
+        newCat.cat = `New Ingredient List ${newCat.sort ? newCat.sort +1 : 1}`
         newIngredient.sortOrder = 0
+        newIngredient.fieldValue = `Ingredient ${newCat.ingredients.length}`
         newCat.ingredients = []
         newCat.ingredients.push(newIngredient)
         newState.data.ingForm2.push(newCat)

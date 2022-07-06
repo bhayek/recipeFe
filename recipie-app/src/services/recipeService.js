@@ -4,12 +4,14 @@ import jwtDecode from 'jwt-decode';
 
 
 
-export function saveRecipe(data, recipeId) {
-    const saveRecipeEndpoint = getConfigs().apiUrl + `/recipes/${recipeId}/update`
-
-    console.log(http.post(saveRecipeEndpoint))
-    return http.post(saveRecipeEndpoint)
+export async function saveRecipe(data, recipeId) {
+    const saveRecipeEndpoint =  getConfigs().apiUrl + `/recipes/${recipeId}/update`
+    const resp = await http.post(saveRecipeEndpoint,data)
+    console.log(resp)
+    // this.setState({data: resp.data.data})
 }
+
+
 
 export default {
     saveRecipe
